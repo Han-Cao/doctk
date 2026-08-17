@@ -3,3 +3,4 @@
 /gui/node_modules
 /gui/dist
 /gui/src-tauri/gen
+clean_build.sh

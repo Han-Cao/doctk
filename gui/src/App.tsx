@@ -25,11 +25,15 @@ export default function App() {
         </nav>
       </aside>
       <main className="main-area">
-        <Suspense fallback={<div className="loading">Loading tool…</div>}>
-          <ToolLayout title={activeTool.name} description={activeTool.description}>
-            <activeTool.component />
-          </ToolLayout>
-        </Suspense>
+        <ToolLayout title={activeTool.name} description={activeTool.description}>
+          <Suspense fallback={<div className="loading">Loading tool…</div>}>
+            {TOOL_DEFINITIONS.map((tool) => (
+              <div key={tool.id} hidden={tool.id !== activeId}>
+                <tool.component />
+              </div>
+            ))}
+          </Suspense>
+        </ToolLayout>
       </main>
     </div>
   );

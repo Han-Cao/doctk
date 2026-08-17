@@ -242,6 +242,10 @@ The React shell renders:
 - **Main area**: renders the active tool's component.
 - **Toasts**: global error/success notifications used by all tools.
 - **Routing**: simple state-based routing or React Router. The route path is the tool id, e.g. `#/tool/markdown_tsv`.
+- **State preservation**: switching between tools must preserve each tool's
+  component state. Feature components are kept mounted (e.g. hidden with CSS)
+  or their state is lifted to the shell, so switching tabs never resets a tool
+  to its initial sample data.
 
 ### 6.2 Frontend feature contract
 

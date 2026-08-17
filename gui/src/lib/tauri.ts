@@ -74,6 +74,10 @@ export async function mdToTable(md: string): Promise<Table> {
   return invoke<Table>("markdown_tsv_md_to_table", { md });
 }
 
+export async function parseTsv(tsv: string): Promise<Table> {
+  return invoke<Table>("markdown_tsv_parse_tsv", { tsv });
+}
+
 export async function tableToMd(table: Table): Promise<string> {
   return invoke<string>("markdown_tsv_table_to_md", { table });
 }

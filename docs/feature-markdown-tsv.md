@@ -7,7 +7,7 @@
 
 ## 1. Overview
 
-Convert between GitHub-style markdown tables and plain TSV (tab-separated values). In the GUI, markdown is edited as plain text in a textarea, while TSV is shown as an editable table viewer that supports editing cells, deleting/inserting rows and columns, and converting back to markdown.
+Convert between GitHub-style markdown tables and plain TSV (tab-separated values). In the GUI, markdown is edited as plain text in a full-width textarea on top, while TSV is shown as an editable table viewer below it. The TSV box is twice as tall as the markdown box (2× height) and scrolls when the table overflows that height. The table viewer supports editing cells, deleting/inserting rows and columns, column/row selection, and copy/paste of TSV data. The table can be converted back to markdown.
 
 ## 2. Scope
 
@@ -16,6 +16,9 @@ Convert between GitHub-style markdown tables and plain TSV (tab-separated values
 - Preserve and emit column alignment (`---`, `:---`, `:---:`, `---:`).
 - Parse and generate plain TSV (no quoting/escaping).
 - Editable GUI grid with cell edit, insert/delete rows, insert/delete columns, undo/redo.
+- GUI layout with markdown and TSV boxes stacked vertically; the TSV box is twice the height of the markdown box and scrolls when the table overflows.
+- TSV table viewer with vertical/horizontal scrollbars.
+- Copy/paste of TSV data in the table viewer (paste replaces the table, copy writes the selection or whole table as TSV).
 - Two-way GUI conversion (markdown → table, table → markdown).
 - CLI conversion commands with file or stdin/stdout I/O.
 
@@ -119,40 +122,122 @@ doctk table tsv2md [INPUT] [-o OUTPUT]
 ### 5.1 Layout
 
 ```text
-[ Markdown (plain text) ]                [ TSV (editable table)         ]
-[ textarea                ]  --Convert--> [ editable grid               ]
-[                         ]  <--Convert-- [ toolbar: +row -row +col -col]
-[ status bar: line/col    ]               [ status bar: R rows × C cols ]
+[ Markdown (plain text) — full width, default height H               ]
+[ [ textarea (monospace, scrollable)                               ] ]
+[ status bar: lines / characters                                    ]
+[ toolbar (left-aligned): [Convert to Table ↓] [Convert to Markdown ↑] ]
+[ TSV (editable table) — full width, height 2H                       ]
+[ toolbar (left-aligned): [+ Row] [+ Column] [Copy TSV] [Paste TSV]  ]
+[ [ table viewer (scrolls when content overflows 2H)               ] ]
+[ status bar: R rows × C cols  |  dirty indicator                   ]
 ```
+
+- The two boxes are stacked **up/down** (markdown on top, TSV below).
+- The markdown box is full width with a default height `H` (e.g. `320px`); its
+  textarea scrolls when the markdown text overflows.
+- The conversion buttons are in a **left-aligned toolbar directly below the
+  markdown box**. They are not centered and not placed in a middle strip.
+- The TSV box is full width with a fixed height of **2H** (twice the markdown
+  box height, e.g. `640px` when `H = 320px`).
+- The table inside the TSV box uses its natural row height. Rows are **not**
+  stretched or resized to fill the 2H box. When the table has fewer rows than
+  the box can display, the table is top-aligned and the remaining space is left
+  blank.
+- The TSV table viewer has both vertical and horizontal scrollbars when the
+  table content is larger than the 2H box. The TSV box height does not change
+  after paste or conversion.
+- No helper/annotation text is rendered under the table viewer, and no
+  annotation is rendered next to the conversion buttons.
 
 ### 5.2 Behavior
 
-- **Markdown → table**: user edits markdown and clicks **Convert to Table**. On success the grid is replaced with the parsed table; on error an inline message appears and the previous grid stays intact.
-- **Table → markdown**: user edits the grid and clicks **Convert to Markdown**. The markdown textarea is updated. A dirty indicator marks whether grid edits have not yet been converted.
-- Conversion is button-driven (not automatic) to prevent one pane from clobbering the other while the user types.
-- Import/Export: open/save TSV files via Tauri dialog plugin; open markdown file into the textarea; save markdown textarea.
+- **Initial sample data**: the default example markdown is a **5 × 3 table
+  (5 body rows, 3 columns)**, so the initial table viewer shows 5 body rows.
+- **Tab switching**: when the user switches to another tool tab and back, the
+  markdown text and the TSV table state (including edits, selection, and dirty
+  status) remain unchanged. The component is kept mounted or its state is
+  lifted to the shell so it never resets to the default sample on tab change.
+- **Markdown → table**: user edits markdown and clicks **Convert to Table ↓**.
+  On success the grid is replaced with the parsed table; on error an inline
+  message appears and the previous grid stays intact.
+- **Table → markdown**: user edits the grid and clicks **Convert to Markdown ↑**.
+  The markdown textarea is updated. A dirty indicator marks whether grid edits
+  have not yet been converted.
+- Conversion is button-driven (not automatic) to prevent one box from
+  clobbering the other while the user types.
+- **TSV input via paste**:
+  - `Ctrl+V` / `Cmd+V` in the table viewer, or the **Paste TSV** toolbar button,
+    reads the clipboard as plain text and parses it as TSV using the core
+    `parse_tsv` function.
+  - On success the entire table is replaced with the parsed table.
+  - The TSV box keeps its fixed 2H height. If the pasted table is taller than
+    the box, the table viewer scrolls; if it is shorter, rows keep their natural
+    height and the extra space below the table stays blank.
+  - On parse error (e.g. inconsistent column counts) an inline message is shown
+    and the existing table is kept.
+  - Empty clipboard text is a no-op.
+- **TSV output via copy**:
+  - `Ctrl+C` / `Cmd+C` in the table viewer, or the **Copy TSV** toolbar button,
+    writes TSV to the clipboard.
+  - If a cell/column/row selection exists, only the selected cells are copied;
+    otherwise the entire table is copied.
+  - Cells are joined with `\t` per row and rows are joined with `\n`.
+  - Clipboard is written with `navigator.clipboard.writeText(...)`.
+- **Scrollbars**:
+  - The table viewer is rendered inside a scroll container
+    (`overflow: auto`), so scrollbars appear only when needed.
+  - The header row and the first (row-action) column are sticky so labels stay
+    visible while scrolling large tables.
+- Import/Export: open/save TSV files via Tauri dialog plugin; open markdown
+  file into the textarea; save markdown textarea.
 
 ### 5.3 Editable grid (`EditableTsvGrid.tsx`)
 
 - Renders `headers` and `rows` from `Table`.
+- The grid is wrapped in a scroll container with `overflow: auto`. The
+  container fills the fixed 2H TSV box and shows vertical/horizontal scrollbars
+  when the table overflows. Rows use their natural height; the table is
+  top-aligned and any remaining space in the box is left blank.
 - Cell editing:
   - Double-click, Enter, or F2 to edit.
   - Enter commits and moves down; Tab commits and moves right; Escape cancels.
   - Arrow keys navigate without editing.
 - Selection:
-  - Click cell to select; click row/column header to select whole row/column.
-  - Shift+click for a range; toolbar actions apply to the current selection.
-- Row operations: insert above/below, delete selected row(s), delete row via row-header context menu.
-- Column operations: insert left/right, delete selected column(s), delete column via column-header context menu.
+  - Click a column header to select that column.
+  - Shift+click another column header to select the column range between the
+    two column headers.
+  - Click a row header to select that row.
+  - Shift+click another row header to select the row range between the two row
+    headers.
+  - Click a cell to select that single cell. Shift+click on cells does **not**
+    create cell ranges.
+  - Click the top-left corner cell to select the whole table.
+- Row operations: insert above/below, delete selected row(s), delete row via
+  row-header context menu.
+- Column operations: insert left/right, delete selected column(s), delete
+  column via column-header context menu.
+- Clipboard:
+  - Paste handler reads `text/plain` from the clipboard event and calls the
+    same `parse_tsv` helper used by the Tauri command. Clipboard text is not
+    modified before parsing.
+  - Copy handler serializes either the selection or the whole table to TSV and
+    calls `navigator.clipboard.writeText`.
+  - Toolbar buttons **Copy TSV** and **Paste TSV** provide discoverable
+    alternatives to the keyboard shortcuts.
 - Undo/redo stack for cell edits and row/col operations.
-- Cell sanitization on commit: tabs and newlines are replaced with spaces (keeps the TSV model valid).
-- Grid state is a `string[][]` in React; conversion to/from core only happens at the feature boundary.
-- Grid operations (`insertRow`, `deleteRows`, `insertCol`, `deleteCols`) are pure functions in `gui/src/features/markdown-tsv/gridOps.ts` with Vitest tests.
+- Cell sanitization on commit: tabs and newlines are replaced with spaces
+  (keeps the TSV model valid).
+- Grid state is a `string[][]` in React; conversion to/from core only happens
+  at the feature boundary.
+- Grid operations (`insertRow`, `deleteRows`, `insertCol`, `deleteCols`,
+  `tableToTsv`, `selectionToTsv`) are pure functions in
+  `gui/src/features/markdown-tsv/gridOps.ts` with Vitest tests.
 
 ### 5.4 Tauri commands
 
 ```rust
 #[tauri::command] pub async fn markdown_tsv_md_to_table(md: String) -> Result<Table, String>;
+#[tauri::command] pub async fn markdown_tsv_parse_tsv(tsv: String) -> Result<Table, String>;
 #[tauri::command] pub async fn markdown_tsv_table_to_md(table: Table) -> Result<String, String>;
 ```
 
@@ -172,6 +257,8 @@ doctk table tsv2md [INPUT] [-o OUTPUT]
 | Empty TSV file | Empty table; markdown generation produces empty string |
 | Cell contains tab/newline | Replaced with space on grid commit; `<br>`/space on markdown-to-TSV |
 | Alignment colons | Preserved on markdown round-trip |
+| Pasted TSV taller than the 2H box | Viewer keeps the 2H box height and enables vertical scrolling |
+| Pasted TSV with fewer rows than the 2H box can show | Rows keep natural height; blank space is left below the table |
 
 ## 7. Testing
 
@@ -193,6 +280,8 @@ doctk table tsv2md [INPUT] [-o OUTPUT]
 
 ### GUI (Vitest)
 - `gridOps.ts` insert/delete row/col with selection ranges.
+- `tableToTsv` and `selectionToTsv` serialization.
+- TSV clipboard parsing (paste) and copy serialization helpers.
 - Undo/redo stack behavior.
 - Cell sanitization.
 

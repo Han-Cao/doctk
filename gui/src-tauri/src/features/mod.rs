@@ -8,6 +8,7 @@ pub mod pdf_checker;
 pub fn handlers() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static {
     tauri::generate_handler![
         markdown_tsv::markdown_tsv_md_to_table,
+        markdown_tsv::markdown_tsv_parse_tsv,
         markdown_tsv::markdown_tsv_table_to_md,
         diff_checker::diff_checker_side_by_side,
         diff_checker::diff_checker_track_changes,

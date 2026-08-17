@@ -1,0 +1,18 @@
+[package]
+name = "doctk-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Command-line interface for doctk"
+
+[[bin]]
+name = "doctk"
+path = "src/main.rs"
+
+[dependencies]
+doctk-core = { path = "../doctk-core" }
+clap = { version = "4", features = ["std", "color", "help", "usage", "error-context"] }
+serde_json = "1"
+
+[dev-dependencies]
+serde_json = "1"

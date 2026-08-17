@@ -1,0 +1,12 @@
+[package]
+name = "doctk-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Core document-processing logic for the doctk GUI and CLI"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+similar = "2"
+lopdf = "0.35"

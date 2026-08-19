@@ -8,6 +8,7 @@ use clap::ArgMatches;
 use doctk_core::{DoctkError, Result};
 
 pub mod diff_checker;
+pub mod markdown_text;
 pub mod markdown_tsv;
 pub mod pdf_checker;
 
@@ -17,15 +18,17 @@ pub fn build_cli() -> clap::Command {
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .subcommand(markdown_tsv::cli())
         .subcommand(diff_checker::cli())
+        .subcommand(markdown_tsv::cli())
+        .subcommand(markdown_text::cli())
         .subcommand(pdf_checker::cli())
 }
 
 pub fn dispatch(matches: &ArgMatches) -> Result<i32> {
     match matches.subcommand() {
-        Some(("table", sub)) => markdown_tsv::run(sub),
         Some(("diff", sub)) => diff_checker::run(sub),
+        Some(("table", sub)) => markdown_tsv::run(sub),
+        Some(("md2text", sub)) => markdown_text::run(sub),
         Some(("pdf", sub)) => pdf_checker::run(sub),
         _ => Err(DoctkError::InvalidArgument(
             "unknown command; run `doctk --help` for usage".to_string(),

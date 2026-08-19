@@ -2,5 +2,6 @@
 //! follows the feature contract from `docs/tool-framework.md`.
 
 pub mod diff_checker;
+pub mod markdown_text;
 pub mod markdown_tsv;
 pub mod pdf_checker;

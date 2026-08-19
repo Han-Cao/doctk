@@ -24,8 +24,9 @@ pub struct ToolManifest {
 
 /// All features shipped with this build.
 pub const TOOL_REGISTRY: &[ToolManifest] = &[
-    crate::features::markdown_tsv::MANIFEST,
     crate::features::diff_checker::MANIFEST,
+    crate::features::markdown_tsv::MANIFEST,
+    crate::features::markdown_text::MANIFEST,
     crate::features::pdf_checker::MANIFEST,
 ];
 

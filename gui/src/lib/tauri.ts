@@ -82,6 +82,10 @@ export async function tableToMd(table: Table): Promise<string> {
   return invoke<string>("markdown_tsv_table_to_md", { table });
 }
 
+export async function markdownToText(md: string): Promise<string> {
+  return invoke<string>("markdown_text_convert", { md });
+}
+
 export async function diffSideBySide(left: string, right: string): Promise<SideBySideDiff> {
   return invoke<SideBySideDiff>("diff_checker_side_by_side", { left, right });
 }

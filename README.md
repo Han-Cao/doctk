@@ -4,8 +4,9 @@ A Rust workspace with a Tauri GUI and a CLI for document-processing tasks:
 
 | Tool id | Feature | CLI command |
 |---|---|---|
-| `markdown_tsv` | Markdown table ↔ TSV conversion | `doctk table md2tsv` / `doctk table tsv2md` |
 | `diff_checker` | Side-by-side and Word-style track-changes diff | `doctk diff` |
+| `markdown_tsv` | Markdown table ↔ TSV conversion | `doctk table md2tsv` / `doctk table tsv2md` |
+| `markdown_text` | Markdown → plain text | `doctk md2text` |
 | `pdf_checker` | PDF/AI page-size and color-mode preflight | `doctk pdf check` |
 
 The implementation follows the plan in `docs/tool-framework.md` and the individual

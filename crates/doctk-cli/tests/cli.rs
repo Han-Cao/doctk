@@ -101,6 +101,52 @@ fn diff_exit_code_reports_difference() {
 }
 
 #[test]
+fn md2text_converts_stdin_to_stdout() {
+    let mut child = doctk()
+        .args(["md2text", "-"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    use std::io::Write;
+    child
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b"# Header\n\n[site](https://example.com) and [part](#part)\n")
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("Header"));
+    assert!(stdout.contains("site (https://example.com)"));
+    assert!(stdout.contains("part"));
+    assert!(!stdout.contains("#part"));
+}
+
+#[test]
+fn md2text_writes_output_file() {
+    let input = fixture("sample.md");
+    let output_path = fixture("sample.txt");
+    std::fs::write(&input, "# Title\n\nSome **bold** text\n").unwrap();
+    let output = doctk()
+        .args([
+            "md2text",
+            input.to_str().unwrap(),
+            "-o",
+            output_path.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let text = std::fs::read_to_string(&output_path).unwrap();
+    assert!(text.contains("Title"));
+    assert!(text.contains("Some bold text"));
+    std::fs::remove_file(&input).unwrap();
+    std::fs::remove_file(&output_path).unwrap();
+}
+
+#[test]
 fn pdf_check_reports_json_and_fail_exit_code() {
     let pdf = fixture("sample.pdf");
     let output = doctk()

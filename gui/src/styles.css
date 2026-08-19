@@ -251,6 +251,11 @@ button.danger:hover { background: #fee2e2; border-color: #fca5a5; }
   padding: 16px;
 }
 
+.pdf-dropzone.drag-over {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
 .pdf-dropzone p {
   margin: 0 0 8px;
   text-align: center;

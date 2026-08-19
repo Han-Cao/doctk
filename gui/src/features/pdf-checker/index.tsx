@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { open } from "@tauri-apps/plugin-dialog";
 import {
   checkPdfFiles,
@@ -68,7 +69,45 @@ export default function PdfCheckerTool() {
   const [ignoreOrientation, setIgnoreOrientation] = useState(true);
   const [reports, setReports] = useState<PdfFileReport[] | null>(null);
   const [running, setRunning] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let disposed = false;
+
+    getCurrentWebviewWindow()
+      .onDragDropEvent((event) => {
+        if (event.payload.type === "enter") {
+          setDragOver(true);
+        } else if (event.payload.type === "leave") {
+          setDragOver(false);
+        } else if (event.payload.type === "drop") {
+          setDragOver(false);
+          const dropped = event.payload.paths.filter((path) => /\.(pdf|ai)$/i.test(path));
+          if (dropped.length > 0) {
+            setFiles((current) => Array.from(new Set([...current, ...dropped])));
+            setReports(null);
+          }
+        }
+      })
+      .then((fn) => {
+        if (disposed) {
+          fn();
+        } else {
+          unlisten = fn;
+        }
+      })
+      .catch((err) => {
+        // Running in a plain browser or an older WebView without drag-drop events.
+        console.warn("Drag-and-drop is not available:", err);
+      });
+
+    return () => {
+      disposed = true;
+      if (unlisten) unlisten();
+    };
+  }, []);
 
   async function browseFiles() {
     try {
@@ -182,7 +221,7 @@ export default function PdfCheckerTool() {
       <div className="pane-grid">
         <div className="pane">
           <label>PDF / AI files</label>
-          <div className="dropzone pdf-dropzone">
+          <div className={`dropzone pdf-dropzone ${dragOver ? "drag-over" : ""}`}>
             <p>Drop PDF/AI files here.</p>
             {files.length > 0 && (
               <ul className="file-list">

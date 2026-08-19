@@ -148,8 +148,9 @@ doctk diff LEFT RIGHT [--format side-by-side|track-changes|unified] [-o OUTPUT] 
 - Each box has a small **Open file…** button above its textarea. The Original
   box button is left-aligned; the Changed box button is right-aligned.
 - The **Swap** button is rendered in its own **middle column** between the two
-  boxes, vertically aligned with the **Open file…** buttons row. It is not
-  placed next to the view mode buttons.
+  boxes, vertically aligned with the **Open file…** buttons row. It uses a
+  two-arrow icon (`⇄`) with an accessible label. It is not placed next to the
+  view mode buttons.
 - The view mode buttons (**Side by side** / **Track changes**) are in a
   left-aligned toolbar below the input boxes.
 
@@ -168,7 +169,14 @@ doctk diff LEFT RIGHT [--format side-by-side|track-changes|unified] [-o OUTPUT] 
   - Left and right columns share a synchronized scroll position.
 - Track-changes view:
   - Renders structured segments as React elements: deleted = red strikethrough, inserted = green underline.
+  - Provides **Copy original** and **Copy changed** buttons that write the
+    original and changed text to the clipboard.
   - No raw HTML injection; all rendering is component-based.
+- Side-by-side word highlights:
+  - Core returns word ranges as **UTF-8 byte offsets**. The frontend converts
+    these byte offsets to JavaScript string indices before slicing, so
+    highlighted words stay aligned with non-ASCII text such as curly quotes or
+    CJK characters.
 - Empty inputs are valid; a diff against empty shows all lines as inserted/deleted.
 
 ### 5.3 Tauri commands

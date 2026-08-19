@@ -69,12 +69,14 @@ export default function DiffCheckerTool() {
           <div className="diff-open-row center">
             <button
               className="small-button"
+              title="Swap Original and Changed"
+              aria-label="Swap Original and Changed"
               onClick={() => {
                 setLeft(right);
                 setRight(left);
               }}
             >
-              Swap
+              ⇄
             </button>
           </div>
         </div>
@@ -109,7 +111,7 @@ export default function DiffCheckerTool() {
       {view === "side-by-side" ? (
         <SideBySideView diff={sideBySide} />
       ) : (
-        <TrackChangesView diff={trackChanges} />
+        <TrackChangesView diff={trackChanges} originalText={left} changedText={right} />
       )}
     </div>
   );
@@ -135,21 +137,71 @@ function SideBySideView({ diff }: { diff: SideBySideDiff | null }) {
   );
 }
 
-function TrackChangesView({ diff }: { diff: TrackChangesDiff | null }) {
+function TrackChangesView({
+  diff,
+  originalText,
+  changedText,
+}: {
+  diff: TrackChangesDiff | null;
+  originalText: string;
+  changedText: string;
+}) {
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
+
+  async function copyText(text: string, label: string) {
+    const clipboard = navigator.clipboard;
+    if (!clipboard) {
+      setCopyMessage("Clipboard API is not available in this WebView.");
+      return;
+    }
+    try {
+      await clipboard.writeText(text);
+      setCopyMessage(`${label} copied to clipboard.`);
+    } catch (err) {
+      setCopyMessage(`Copy failed: ${String(err)}`);
+    }
+  }
+
   if (!diff) return <p className="hint">Computing diff…</p>;
   return (
-    <div className="track-changes">
-      {diff.segments.map((segment, index) => {
-        if (segment.kind === "Deleted") return <del key={index}>{segment.text}</del>;
-        if (segment.kind === "Inserted") return <ins key={index}>{segment.text}</ins>;
-        return <span key={index}>{segment.text}</span>;
-      })}
+    <div>
+      <div className="toolbar" style={{ marginBottom: 8 }}>
+        <button className="small-button" onClick={() => copyText(originalText, "Original")}>
+          Copy original
+        </button>
+        <button className="small-button" onClick={() => copyText(changedText, "Changed")}>
+          Copy changed
+        </button>
+      </div>
+      {copyMessage && <p className="hint clipboard-message">{copyMessage}</p>}
+      <div className="track-changes">
+        {diff.segments.map((segment, index) => {
+          if (segment.kind === "Deleted") return <del key={index}>{segment.text}</del>;
+          if (segment.kind === "Inserted") return <ins key={index}>{segment.text}</ins>;
+          return <span key={index}>{segment.text}</span>;
+        })}
+      </div>
     </div>
   );
 }
 
 function GutterLineNumber({ n, side }: { n: number | null; side: string }) {
   return <span style={{ color: "#9ca3af", minWidth: 36, display: "inline-block" }}>{n ?? " "}</span>;
+}
+
+function byteIndexToJsIndex(text: string, byteIndex: number): number {
+  if (byteIndex <= 0) return 0;
+  let bytes = 0;
+  let i = 0;
+  while (i < text.length && bytes < byteIndex) {
+    const codePoint = text.codePointAt(i);
+    if (codePoint === undefined) break;
+    const codePointBytes = codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
+    if (bytes + codePointBytes > byteIndex) break;
+    bytes += codePointBytes;
+    i += codePoint > 0xffff ? 2 : 1;
+  }
+  return i;
 }
 
 function HighlightedText(props: {
@@ -162,12 +214,17 @@ function HighlightedText(props: {
   const parts: React.ReactNode[] = [];
   let cursor = 0;
   ranges.forEach((range, index) => {
-    const start = leftSide ? range.left_start : range.right_start;
-    const len = leftSide ? range.left_len : range.right_len;
-    if (!len || start < cursor || start + len > text.length) return;
+    const byteStart = leftSide ? range.left_start : range.right_start;
+    const byteLen = leftSide ? range.left_len : range.right_len;
+    if (!byteLen) return;
+    const byteEnd = byteStart + byteLen;
+    const start = byteIndexToJsIndex(text, byteStart);
+    const end = byteIndexToJsIndex(text, byteEnd);
+    const len = end - start;
+    if (len <= 0 || start < cursor || end > text.length) return;
     parts.push(<span key={`plain-${index}`}>{text.slice(cursor, start)}</span>);
-    parts.push(<mark key={`mark-${index}`}>{text.slice(start, start + len)}</mark>);
-    cursor = start + len;
+    parts.push(<mark key={`mark-${index}`}>{text.slice(start, end)}</mark>);
+    cursor = end;
   });
   parts.push(<span key="tail">{text.slice(cursor)}</span>);
   return <>{parts}</>;

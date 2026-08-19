@@ -15,7 +15,7 @@ A lightweight desktop utility for everyday document-processing tasks.
 |---|---|---|
 | **Diff Checker** | Side-by-side comparison with word-level highlights, or Microsoft Word-style track changes view. | `doctk diff` |
 | **Markdown ⇄ TSV** | Convert markdown tables to/from TSV. | `doctk table md2tsv` / `doctk table tsv2md` |
-| **Markdown → Text** | RStrip Markdown syntax and export plain text. | `doctk md2text` |
+| **Markdown → Text** | Strip Markdown syntax and export plain text. | `doctk md2text` |
 | **PDF Checker** | 	Validate PDF/Illustrator page size and color mode against predefined paper-size presets. | `doctk pdf check` |
 
 ## Quick start

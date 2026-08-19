@@ -2,7 +2,7 @@
 
 A lightweight desktop utility for everyday document-processing tasks.
 
-> [!CAUTION]
+> [!WARNING]
 > This project is vibe coded
 
 ## Why doctk?
@@ -20,12 +20,13 @@ A lightweight desktop utility for everyday document-processing tasks.
 
 ## Quick start
 
-> Note: The Windows GUI is fully tested. Linux and macOS GUI and all CLI support is experimental. Please report any issues. Let me know if you'd like more prebuilt binaries.
+> [!NOTE]
+> The Windows GUI is fully tested. Linux and macOS GUI and all CLI support is experimental. Please open an issue if you encounter any problems or would like prebuilt binaries for additional platforms.
 
 ### GUI
 
 - **Windows 10/11**: Download the prebuilt installer (`.msi` or `.exe`) from the [releases](https://github.com/Han-Cao/doctk/releases) page.
-- **Linux / macOS**: build from source. See the [DEVELOPMENT.md](docs/DEVELOPMENT.md) for system dependencies and build instructions.
+- **Linux / macOS**: Build from source. See the [DEVELOPMENT.md](docs/DEVELOPMENT.md) for system dependencies and build instructions.
 
 ### CLI
 
@@ -45,11 +46,10 @@ For full prerequisites and build instructions, see
 ### Diff Checker (track changes view)
 
 Compare two texts side-by-side, with options to copy the original, changed, or raw track-changes output.
-
-![diff-checker-plot](./docs/images/diff_checker.png)
+<img src="./docs/images/diff_checker.png" width="600">
 
 ### PDF Checker
 
 Quickly verify whether your PDF or Illustrator file meets the expected paper size and color format. 
 
-![pdf-checker-plot](./docs/images/pdf_checker.png)
+<img src="./docs/images/pdf_checker.png" width="600">

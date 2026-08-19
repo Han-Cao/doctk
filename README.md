@@ -46,10 +46,10 @@ For full prerequisites and build instructions, see
 
 Compare two texts side-by-side, with options to copy the original, changed, or raw track-changes output.
 
-[diff-checker-plot](./docs/images/diff_checker.png)
+![diff-checker-plot](./docs/images/diff_checker.png)
 
 ### PDF Checker
 
 Quickly verify whether your PDF or Illustrator file meets the expected paper size and color format. 
 
-[pdf-checker-plot](./docs/images/pdf_checker.png)
+![pdf-checker-plot](./docs/images/pdf_checker.png)

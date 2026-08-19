@@ -226,6 +226,23 @@ button.danger:hover { background: #fee2e2; border-color: #fca5a5; }
 
 .diff-view-toolbar {
   margin: 12px 0;
+  justify-content: space-between;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-mode-group label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.copy-mode-group select {
+  padding: 4px 6px;
+  font-size: 12px;
 }
 
 /* PDF checker file list inside drop box */

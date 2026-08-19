@@ -137,7 +137,7 @@ doctk diff LEFT RIGHT [--format side-by-side|track-changes|unified] [-o OUTPUT] 
 [ (Open file…) small, left-aligned  ]  [ Swap ]  [ (Open file…) small, right-aligned ]
 [ textarea (scrollable)             ]            [ textarea (scrollable)             ]
 ------------------------------------------------------------------------------------
-[ toolbar (left-aligned): (•) Side-by-side  ( ) Track changes                       ]
+[ toolbar: (•) Side-by-side  ( ) Track changes          Copy: [Changed ▾] (right) ]
 ------------------------------------------------------------------------------------
 [ Diff output pane                                                                    ]
 [ Side-by-side: aligned two-column view with word highlights                           ]
@@ -151,8 +151,11 @@ doctk diff LEFT RIGHT [--format side-by-side|track-changes|unified] [-o OUTPUT] 
   boxes, vertically aligned with the **Open file…** buttons row. It uses a
   two-arrow icon (`⇄`) with an accessible label. It is not placed next to the
   view mode buttons.
-- The view mode buttons (**Side by side** / **Track changes**) are in a
-  left-aligned toolbar below the input boxes.
+- The view mode buttons (**Side by side** / **Track changes**) are on the left
+  of a toolbar below the input boxes.
+- When the **Track changes** view is active, the same toolbar shows a
+  right-aligned **Copy:** dropdown with options **Raw**, **Original**, and
+  **Changed**. Default is **Changed**.
 
 ### 5.2 Behavior
 
@@ -169,8 +172,10 @@ doctk diff LEFT RIGHT [--format side-by-side|track-changes|unified] [-o OUTPUT] 
   - Left and right columns share a synchronized scroll position.
 - Track-changes view:
   - Renders structured segments as React elements: deleted = red strikethrough, inserted = green underline.
-  - Provides **Copy original** and **Copy changed** buttons that write the
-    original and changed text to the clipboard.
+  - `Ctrl+C` (Windows/Linux) and `Cmd+C` (macOS) respect the **Copy:** dropdown mode:
+    - `Raw`: browser default selected visible text.
+    - `Original`: selected text mapped back to the original side.
+    - `Changed`: selected text mapped back to the changed side.
   - No raw HTML injection; all rendering is component-based.
 - Side-by-side word highlights:
   - Core returns word ranges as **UTF-8 byte offsets**. The frontend converts

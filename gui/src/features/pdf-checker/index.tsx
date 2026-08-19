@@ -12,12 +12,58 @@ const PT_PER_INCH = 72.0;
 const mmToPt = (mm: number) => (mm / MM_PER_INCH) * PT_PER_INCH;
 const ptToMm = (pt: number) => (pt / PT_PER_INCH) * MM_PER_INCH;
 
+type Unit = "mm" | "cm" | "in" | "pt";
+
+interface PaperPreset {
+  label: string;
+  widthMm: number;
+  heightMm: number;
+}
+
+const PRESETS: Record<string, PaperPreset> = {
+  a4: { label: "A4", widthMm: 210, heightMm: 297 },
+  a3: { label: "A3", widthMm: 297, heightMm: 420 },
+  letter: { label: "Letter", widthMm: 215.9, heightMm: 279.4 },
+  legal: { label: "Legal", widthMm: 215.9, heightMm: 355.6 },
+  tabloid: { label: "Tabloid", widthMm: 279.4, heightMm: 431.8 },
+};
+
+function unitToMm(value: number, unit: Unit): number {
+  switch (unit) {
+    case "cm":
+      return value * 10;
+    case "in":
+      return value * MM_PER_INCH;
+    case "pt":
+      return (value / PT_PER_INCH) * MM_PER_INCH;
+    case "mm":
+      return value;
+  }
+}
+
+function mmToUnit(mm: number, unit: Unit): number {
+  switch (unit) {
+    case "cm":
+      return mm / 10;
+    case "in":
+      return mm / MM_PER_INCH;
+    case "pt":
+      return (mm / MM_PER_INCH) * PT_PER_INCH;
+    case "mm":
+      return mm;
+  }
+}
+
+function formatNumber(value: number): string {
+  return Number(value.toFixed(3)).toString();
+}
+
 export default function PdfCheckerTool() {
   const [files, setFiles] = useState<string[]>([]);
   const [preset, setPreset] = useState("a4");
-  const [customWidth, setCustomWidth] = useState("");
-  const [customHeight, setCustomHeight] = useState("");
-  const [unit, setUnit] = useState("mm");
+  const [width, setWidth] = useState("210");
+  const [height, setHeight] = useState("297");
+  const [unit, setUnit] = useState<Unit>("mm");
   const [tolerance, setTolerance] = useState("0.5");
   const [ignoreOrientation, setIgnoreOrientation] = useState(true);
   const [reports, setReports] = useState<PdfFileReport[] | null>(null);
@@ -39,16 +85,76 @@ export default function PdfCheckerTool() {
     }
   }
 
+  function applyPreset(presetId: string, targetUnit: Unit) {
+    const info = PRESETS[presetId];
+    if (!info) return;
+    setPreset(presetId);
+    setWidth(formatNumber(mmToUnit(info.widthMm, targetUnit)));
+    setHeight(formatNumber(mmToUnit(info.heightMm, targetUnit)));
+  }
+
+  function handlePresetChange(nextPreset: string) {
+    if (nextPreset === "custom") {
+      setPreset("custom");
+      return;
+    }
+    applyPreset(nextPreset, unit);
+  }
+
+  function handleUnitChange(nextUnit: Unit) {
+    const currentWidth = parseFloat(width);
+    const currentHeight = parseFloat(height);
+    if (Number.isFinite(currentWidth) && Number.isFinite(currentHeight)) {
+      const widthMm = unitToMm(currentWidth, unit);
+      const heightMm = unitToMm(currentHeight, unit);
+      setWidth(formatNumber(mmToUnit(widthMm, nextUnit)));
+      setHeight(formatNumber(mmToUnit(heightMm, nextUnit)));
+    } else if (preset !== "custom") {
+      applyPreset(preset, nextUnit);
+    }
+    setUnit(nextUnit);
+  }
+
+  function handleWidthChange(value: string) {
+    setWidth(value);
+    if (preset !== "custom") {
+      setPreset("custom");
+    }
+  }
+
+  function handleHeightChange(value: string) {
+    setHeight(value);
+    if (preset !== "custom") {
+      setPreset("custom");
+    }
+  }
+
   async function runCheck() {
     if (!files.length) {
       setError("Select at least one PDF or AI file.");
       return;
     }
+    const widthValue = parseFloat(width);
+    const heightValue = parseFloat(height);
+    const toleranceValue = parseFloat(tolerance);
+    if (!Number.isFinite(widthValue) || widthValue <= 0 || !Number.isFinite(heightValue) || heightValue <= 0) {
+      setError("Width and height must be positive numbers.");
+      return;
+    }
+    if (!Number.isFinite(toleranceValue) || toleranceValue < 0) {
+      setError("Tolerance must be a non-negative number.");
+      return;
+    }
     try {
       setRunning(true);
       setError(null);
-      const paper = buildPaper();
-      const reports = await checkPdfFiles(files, paper, mmToPt(parseFloat(tolerance || "0")), ignoreOrientation);
+      const paper = buildPaper(widthValue, heightValue);
+      const reports = await checkPdfFiles(
+        files,
+        paper,
+        mmToPt(toleranceValue),
+        ignoreOrientation,
+      );
       setReports(reports);
     } catch (err) {
       setError(String(err));
@@ -57,23 +163,15 @@ export default function PdfCheckerTool() {
     }
   }
 
-  function buildPaper(): PaperSize {
-    if (customWidth && customHeight) {
-      const factor = unit === "cm" ? mmToPt(10) : unit === "in" ? PT_PER_INCH : unit === "pt" ? 1 : mmToPt(1);
-      return {
-        name: "Custom",
-        width_pt: parseFloat(customWidth) * factor,
-        height_pt: parseFloat(customHeight) * factor,
-      };
-    }
-    const presets: Record<string, PaperSize> = {
-      a4: { name: "A4", width_pt: mmToPt(210), height_pt: mmToPt(297) },
-      a3: { name: "A3", width_pt: mmToPt(297), height_pt: mmToPt(420) },
-      letter: { name: "Letter", width_pt: 612, height_pt: 792 },
-      legal: { name: "Legal", width_pt: 612, height_pt: 1008 },
-      tabloid: { name: "Tabloid", width_pt: 792, height_pt: 1224 },
+  function buildPaper(widthValue: number, heightValue: number): PaperSize {
+    const widthMm = unitToMm(widthValue, unit);
+    const heightMm = unitToMm(heightValue, unit);
+    const paperPreset = PRESETS[preset];
+    return {
+      name: paperPreset ? paperPreset.label : "Custom",
+      width_pt: mmToPt(widthMm),
+      height_pt: mmToPt(heightMm),
     };
-    return presets[preset] ?? presets.a4;
   }
 
   const totalPages = reports?.flatMap((r) => r.pages).length ?? 0;
@@ -84,34 +182,37 @@ export default function PdfCheckerTool() {
       <div className="pane-grid">
         <div className="pane">
           <label>PDF / AI files</label>
-          <div className="dropzone">
-            <p>Drop PDF/AI files here or click to browse.</p>
-            <button className="primary" onClick={browseFiles}>Browse…</button>
+          <div className="dropzone pdf-dropzone">
+            <p>Drop PDF/AI files here.</p>
+            {files.length > 0 && (
+              <ul className="file-list">
+                {files.map((file) => (
+                  <li key={file} className="file-row">
+                    <span className="file-path">{file}</span>
+                    <button
+                      className="icon-button danger"
+                      title="Remove file"
+                      onClick={() => {
+                        setFiles((current) => current.filter((f) => f !== file));
+                        setReports(null);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          {files.length > 0 && (
-            <ul>
-              {files.map((file) => (
-                <li key={file}>
-                  <span style={{ marginRight: 8 }}>{file}</span>
-                  <button
-                    className="danger"
-                    onClick={() => {
-                      setFiles((current) => current.filter((f) => f !== file));
-                      setReports(null);
-                    }}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          <button className="primary" onClick={browseFiles}>
+            Browse…
+          </button>
         </div>
 
         <div className="pane">
           <label>Paper size settings</label>
           <div className="toolbar">
-            <select value={preset} onChange={(e) => { setPreset(e.target.value); setCustomWidth(""); setCustomHeight(""); }}>
+            <select value={preset} onChange={(e) => handlePresetChange(e.target.value)}>
               <option value="a4">A4</option>
               <option value="a3">A3</option>
               <option value="letter">Letter</option>
@@ -120,22 +221,34 @@ export default function PdfCheckerTool() {
               <option value="custom">Custom</option>
             </select>
           </div>
-          {preset === "custom" && (
-            <div className="toolbar" style={{ marginTop: 8 }}>
-              <input type="number" placeholder="Width" value={customWidth} onChange={(e) => setCustomWidth(e.target.value)} />
-              <input type="number" placeholder="Height" value={customHeight} onChange={(e) => setCustomHeight(e.target.value)} />
-              <select value={unit} onChange={(e) => setUnit(e.target.value)}>
-                <option value="mm">mm</option>
-                <option value="cm">cm</option>
-                <option value="in">in</option>
-                <option value="pt">pt</option>
-              </select>
-            </div>
-          )}
+          <div className="toolbar" style={{ marginTop: 8 }}>
+            <input
+              type="number"
+              placeholder="Width"
+              value={width}
+              onChange={(e) => handleWidthChange(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Height"
+              value={height}
+              onChange={(e) => handleHeightChange(e.target.value)}
+            />
+            <select value={unit} onChange={(e) => handleUnitChange(e.target.value as Unit)}>
+              <option value="mm">mm</option>
+              <option value="cm">cm</option>
+              <option value="in">in</option>
+              <option value="pt">pt</option>
+            </select>
+          </div>
           <label style={{ marginTop: 8 }}>Tolerance (mm)</label>
           <input type="number" step="0.1" value={tolerance} onChange={(e) => setTolerance(e.target.value)} />
           <label style={{ marginTop: 8 }}>
-            <input type="checkbox" checked={ignoreOrientation} onChange={(e) => setIgnoreOrientation(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={ignoreOrientation}
+              onChange={(e) => setIgnoreOrientation(e.target.checked)}
+            />
             Allow landscape pages to fit portrait paper
           </label>
           <div style={{ marginTop: 12 }}>
@@ -158,9 +271,9 @@ export default function PdfCheckerTool() {
               <tr>
                 <th>File</th>
                 <th>Page</th>
+                <th>Color mode</th>
                 <th>Width (mm)</th>
                 <th>Height (mm)</th>
-                <th>Color</th>
                 <th>Fit</th>
                 <th>Reason</th>
               </tr>
@@ -178,9 +291,11 @@ export default function PdfCheckerTool() {
                       <tr key={`${report.path}:${page.page_number}`}>
                         <td>{report.path}</td>
                         <td>{page.page_number}</td>
+                        <td>
+                          <ColorBadge mode={page.color_mode} />
+                        </td>
                         <td>{ptToMm(page.width_pt).toFixed(2)}</td>
                         <td>{ptToMm(page.height_pt).toFixed(2)}</td>
-                        <td><ColorBadge mode={page.color_mode} /></td>
                         <td className={page.fits ? "pass" : "fail"}>{page.fits ? "PASS" : "FAIL"}</td>
                         <td>{page.fit_reason ?? ""}</td>
                       </tr>

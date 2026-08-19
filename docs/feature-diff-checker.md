@@ -133,22 +133,35 @@ doctk diff LEFT RIGHT [--format side-by-side|track-changes|unified] [-o OUTPUT] 
 ### 5.1 Layout
 
 ```text
-[ Left input pane        ] [ View: (•) Side-by-side  ( ) Track changes ] [ Right input pane       ]
-[ Open | Paste | Clear   ] [ Swap ]                                      [ Open | Paste | Clear  ]
-[ textarea               ]                                                [ textarea              ]
---------------------------------------------------------------------------------------------------
-[ Diff output pane                                                                              ]
-[ Side-by-side: aligned two-column view with word highlights                                      ]
-[ Track changes: single document with red strikethrough / green underline                         ]
+[ Original                          ]            [ Changed                           ]
+[ (Open file…) small, left-aligned  ]  [ Swap ]  [ (Open file…) small, right-aligned ]
+[ textarea (scrollable)             ]            [ textarea (scrollable)             ]
+------------------------------------------------------------------------------------
+[ toolbar (left-aligned): (•) Side-by-side  ( ) Track changes                       ]
+------------------------------------------------------------------------------------
+[ Diff output pane                                                                    ]
+[ Side-by-side: aligned two-column view with word highlights                           ]
+[ Track changes: single document with red strikethrough / green underline              ]
 ```
+
+- The left box is titled **Original**; the right box is titled **Changed**.
+- Each box has a small **Open file…** button above its textarea. The Original
+  box button is left-aligned; the Changed box button is right-aligned.
+- The **Swap** button is rendered in its own **middle column** between the two
+  boxes, vertically aligned with the **Open file…** buttons row. It is not
+  placed next to the view mode buttons.
+- The view mode buttons (**Side by side** / **Track changes**) are in a
+  left-aligned toolbar below the input boxes.
 
 ### 5.2 Behavior
 
-- Two textareas hold left/right inputs.
-- File open uses the Tauri dialog plugin; content loads into the corresponding textarea.
+- Two textareas hold the **Original** (left) and **Changed** (right) inputs.
+- File open uses the Tauri dialog plugin; each box has its own small **Open
+  file…** button and content loads into the corresponding textarea.
 - Diff recomputes on input change (debounced ~250 ms) or on explicit **Run diff** button.
-- **Swap** exchanges inputs.
-- View toggle switches between side-by-side and track-changes; both views render from the same `SideBySideDiff`/`TrackChangesDiff` result.
+- **Swap** exchanges the Original and Changed inputs. The button sits in the
+  middle column between the two Open file buttons, not in the view-mode toolbar.
+- View toggle switches between side-by-side and track-changes; both views render from the same `SideBySideDiff`/`TrackChangesDiff` result. The view toggle toolbar is below the input boxes and left-aligned.
 - Side-by-side view:
   - Aligned rows with red/green line backgrounds and `-`/`+` gutters.
   - Replaced lines render both versions with word-level `<mark>`-like highlights.

@@ -158,25 +158,40 @@ doctk pdf check FILES... \
 ### 5.1 Layout
 
 ```text
-[ Drop PDF/AI files here or click to browse ]       [ Settings                  ]
-[ file list with remove buttons                ]     [ Preset: A4 [dropdown]    ]
-                                                    [ Custom: W [  ] H [  ] mm  ]
-                                                    [ Tolerance: [0.5] mm        ]
-                                                    [ [x] Allow landscape       ]
-                                                    [ ( Run check )             ]
-----------------------------------------------------------------------------------
-[ Summary bar: 3 files, 12 pages, 10 pass, 2 fail                                 ]
-[ Results table: file | page | size (mm) | color mode | fit | reason              ]
-[ ( Export CSV / Export JSON )                                                     ]
+[ Drop PDF/AI files here                                  ] [ Settings                      ]
+[ file list (compact rows: filepath + small ✕ delete)    ] [ Preset: [A4 dropdown]         ]
+[                                                         ] [ Width: [ 210 ] Height: [ 297 ] mm ]
+[ [ Browse… ] (below drop box)                            ] [ Tolerance: [0.5] mm            ]
+                                                            [ [x] Allow landscape             ]
+                                                            [ ( Run check )                   ]
+-----------------------------------------------------------------------------------------------
+[ Summary bar: 3 files, 12 pages, 10 pass, 2 fail                                              ]
+[ Results table: file | page | color mode | width (mm) | height (mm) | fit | reason             ]
+[ ( Export CSV / Export JSON )                                                                  ]
 ```
+
+- The file list is rendered **inside the drop box**. Each file row is compact:
+  file path plus a small `✕` delete symbol. No large **Remove** button.
+- The **Browse…** button is below the drop box.
+- The settings pane always shows editable **Width** and **Height** inputs for
+  every paper preset, plus the unit selector. The values update when a preset
+  is selected.
+- The results table column order is:
+  `file | page | color mode | width (mm) | height (mm) | fit | reason`.
 
 ### 5.2 Behavior
 
 - Drag-and-drop `.pdf`/`.ai` files from the OS using Tauri file-drop events.
 - File picker via Tauri dialog plugin.
 - Settings changes invalidate current results; click **Run check** (or auto-run after drop, if enabled) to recompute.
+- **Paper size preset / custom behavior**:
+  - Width and Height inputs are always visible and editable for all presets.
+  - Selecting a preset fills the Width/Height inputs with the preset values.
+  - Editing either Width or Height automatically changes the preset dropdown to
+    **Custom**; the edited values are preserved.
 - Results table:
   - Pass/fail icon per page.
+  - Column order: file, page, Color mode, width (mm), height (mm), fit, reason.
   - Size displayed in mm, with pt in tooltip.
   - Color mode as a color-coded badge: Gray, RGB, CMYK, Mixed, Unknown.
   - `fit_reason` shown when a page fails; empty when it passes.

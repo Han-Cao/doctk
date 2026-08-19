@@ -178,3 +178,106 @@ button.danger:hover { background: #fee2e2; border-color: #fca5a5; }
 .clipboard-message {
   color: #15803d;
 }
+
+/* Diff checker layout */
+.small-button {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.diff-input-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.diff-open-row.left {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.diff-open-row.right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.diff-open-row.center {
+  display: flex;
+  justify-content: center;
+}
+
+.diff-swap-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.diff-swap-spacer {
+  min-height: 21px; /* aligns Swap with the Open file buttons below the labels */
+}
+
+.diff-textarea {
+  flex: 1 1 auto;
+  min-height: 180px;
+  resize: vertical;
+}
+
+.diff-view-toolbar {
+  margin: 12px 0;
+}
+
+/* PDF checker file list inside drop box */
+.pdf-dropzone {
+  text-align: left;
+  padding: 16px;
+}
+
+.pdf-dropzone p {
+  margin: 0 0 8px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.file-path {
+  overflow-wrap: anywhere;
+  color: #1f2937;
+}
+
+.icon-button {
+  border: 0;
+  background: transparent;
+  color: #b91c1c;
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: #fee2e2;
+}

@@ -48,27 +48,60 @@ export default function DiffCheckerTool() {
 
   return (
     <div>
-      <div className="pane-grid">
+      <div className="diff-input-grid">
         <div className="pane">
-          <label>Left / original</label>
-          <textarea rows={12} value={left} onChange={(e) => setLeft(e.target.value)} spellCheck={false} />
-          <button onClick={() => openFile(setLeft)}>Open file…</button>
+          <label>Original</label>
+          <div className="diff-open-row left">
+            <button className="small-button" onClick={() => openFile(setLeft)}>
+              Open file…
+            </button>
+          </div>
+          <textarea
+            className="diff-textarea"
+            value={left}
+            onChange={(e) => setLeft(e.target.value)}
+            spellCheck={false}
+          />
         </div>
+
+        <div className="diff-swap-column">
+          <div className="diff-swap-spacer" />
+          <div className="diff-open-row center">
+            <button
+              className="small-button"
+              onClick={() => {
+                setLeft(right);
+                setRight(left);
+              }}
+            >
+              Swap
+            </button>
+          </div>
+        </div>
+
         <div className="pane">
-          <label>Right / changed</label>
-          <textarea rows={12} value={right} onChange={(e) => setRight(e.target.value)} spellCheck={false} />
-          <button onClick={() => openFile(setRight)}>Open file…</button>
+          <label>Changed</label>
+          <div className="diff-open-row right">
+            <button className="small-button" onClick={() => openFile(setRight)}>
+              Open file…
+            </button>
+          </div>
+          <textarea
+            className="diff-textarea"
+            value={right}
+            onChange={(e) => setRight(e.target.value)}
+            spellCheck={false}
+          />
         </div>
       </div>
 
-      <div className="toolbar" style={{ margin: "12px 0" }}>
+      <div className="toolbar diff-view-toolbar">
         <button className={view === "side-by-side" ? "primary" : ""} onClick={() => setView("side-by-side")}>
           Side by side
         </button>
         <button className={view === "track-changes" ? "primary" : ""} onClick={() => setView("track-changes")}>
           Track changes
         </button>
-        <button onClick={() => { setLeft(right); setRight(left); }}>Swap</button>
       </div>
 
       {error && <div className="error">{error}</div>}

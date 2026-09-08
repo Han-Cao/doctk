@@ -8,6 +8,7 @@ This repo contains the implementation plan for the GUI & CLI document processing
 |---|---|
 | [`tool-framework.md`](tool-framework.md) | Overall tool framework design plan (architecture, feature registry, layer contracts, extension guide) |
 | [`feature-diff-checker.md`](feature-diff-checker.md) | Feature plan: Diff checker |
+| [`feature-case-converter.md`](feature-case-converter.md) | Feature plan: Case converter |
 | [`feature-markdown-tsv.md`](feature-markdown-tsv.md) | Feature plan: Markdown table ↔ TSV conversion |
 | [`feature-markdown-text.md`](feature-markdown-text.md) | Feature plan: Markdown → Text |
 | [`feature-pdf-checker.md`](feature-pdf-checker.md) | Feature plan: PDF checker |

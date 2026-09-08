@@ -5,7 +5,7 @@ This guide covers workspace layout, dependencies, builds, and how to add new fea
 ## Workspace layout
 
 ```text
-crates/doctk-core/     UI-agnostic core library (table, diff, text, pdf logic)
+crates/doctk-core/     UI-agnostic core library (table, diff, text, case, pdf logic)
 crates/doctk-cli/      clap-based CLI (`doctk` binary)
 gui/src-tauri/         Tauri 2 backend (Rust commands wrapping core)
 gui/src/               Vite + React + TypeScript frontend

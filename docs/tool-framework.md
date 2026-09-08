@@ -53,7 +53,7 @@ This document defines the overall architecture and the framework conventions use
 
 - `doctk-core` has no GUI/CLI dependencies, so it can be tested quickly and reused by any future front-end.
 - The GUI shell and CLI shell know nothing about a specific tool except what the registry tells them.
-- A feature's layers are physically co-located by name (`diff_checker`, `markdown_tsv`, `markdown_text`, `pdf_checker`) so a new feature is a copy-paste template plus logic.
+- A feature's layers are physically co-located by name (`diff_checker`, `case_converter`, `markdown_tsv`, `markdown_text`, `pdf_checker`) so a new feature is a copy-paste template plus logic.
 
 ## 3. Workspace Layout
 
@@ -84,6 +84,7 @@ doctk/
 │   │       ├── units.rs
 │   │       └── features/
 │   │           ├── mod.rs
+│   │           ├── case_converter.rs
 │   │           ├── diff_checker.rs
 │   │           ├── markdown_text.rs
 │   │           ├── markdown_tsv.rs
@@ -94,6 +95,7 @@ doctk/
 │       │   ├── main.rs
 │       │   └── commands/
 │       │       ├── mod.rs
+│       │       ├── case_converter.rs
 │       │       ├── diff_checker.rs
 │       │       ├── markdown_text.rs
 │       │       ├── markdown_tsv.rs
@@ -119,6 +121,10 @@ doctk/
     │   └── features/
     │       ├── diff-checker/
     │       │   └── index.tsx
+    │       ├── case-converter/
+    │       │   ├── index.tsx
+    │       │   ├── caseModes.ts
+    │       │   └── caseModes.test.ts
     │       ├── markdown-text/
     │       │   └── index.tsx
     │       ├── markdown-tsv/
@@ -141,6 +147,7 @@ doctk/
             ├── lib.rs
             └── features/
                 ├── mod.rs
+                ├── case_converter.rs
                 ├── diff_checker.rs
                 ├── markdown_text.rs
                 ├── markdown_tsv.rs
@@ -165,6 +172,7 @@ pub struct ToolManifest {
 
 pub const TOOL_REGISTRY: &[ToolManifest] = &[
     crate::features::diff_checker::MANIFEST,
+    crate::features::case_converter::MANIFEST,
     crate::features::markdown_tsv::MANIFEST,
     crate::features::markdown_text::MANIFEST,
     crate::features::pdf_checker::MANIFEST,
@@ -206,6 +214,7 @@ Small cross-feature services live at the core root:
 ```text
 doctk
 ├── diff        # from feature diff_checker
+├── case        # from feature case_converter
 ├── table       # from feature markdown_tsv
 ├── md2text     # from feature markdown_text
 └── pdf         # from feature pdf_checker
@@ -232,6 +241,7 @@ pub fn run(matches: &clap::ArgMatches) -> Result<i32, DoctkError>; // parse args
 pub fn build_cli() -> clap::Command {
     clap::Command::new("doctk")
         .subcommand(diff_checker::cli())
+        .subcommand(case_converter::cli())
         .subcommand(markdown_tsv::cli())
         .subcommand(markdown_text::cli())
         .subcommand(pdf_checker::cli())
@@ -240,6 +250,7 @@ pub fn build_cli() -> clap::Command {
 pub fn dispatch(matches: &ArgMatches) -> Result<i32, DoctkError> {
     match matches.subcommand() {
         Some(("diff", sub)) => diff_checker::run(sub),
+        Some(("case", sub)) => case_converter::run(sub),
         Some(("table", sub)) => markdown_tsv::run(sub),
         Some(("md2text", sub)) => markdown_text::run(sub),
         Some(("pdf", sub)) => pdf_checker::run(sub),
@@ -285,6 +296,7 @@ export interface ToolDefinition {
 
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
   { id: 'diff_checker', ..., component: lazy(() => import('./features/diff-checker')) },
+  { id: 'case_converter', ..., component: lazy(() => import('./features/case-converter')) },
   { id: 'markdown_tsv', ..., component: lazy(() => import('./features/markdown-tsv')) },
   { id: 'markdown_text', ..., component: lazy(() => import('./features/markdown-text')) },
   { id: 'pdf_checker', ..., component: lazy(() => import('./features/pdf-checker')) },
@@ -321,6 +333,7 @@ pub fn handlers() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static
         markdown_text::markdown_text_convert,
         diff_checker::diff_checker_side_by_side,
         diff_checker::diff_checker_track_changes,
+        case_converter::case_converter_convert,
         pdf_checker::pdf_checker_check_files,
     ]
 }
@@ -388,6 +401,7 @@ pub enum DoctkError {
 | `serde` + `serde_json` | Serialization between core, CLI, GUI |
 | `thiserror` | Typed core errors |
 | `similar` | Line and word diff |
+| `unicode-segmentation` | Unicode word boundaries for case conversion |
 | `lopdf` | PDF parsing |
 | `tauri` 2.x | GUI shell |
 | `tauri-plugin-dialog` | Open/save dialogs |

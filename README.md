@@ -14,6 +14,7 @@ A lightweight desktop utility for everyday document-processing tasks.
 | Feature | What it does | CLI command |
 |---|---|---|
 | **Diff Checker** | Side-by-side comparison with word-level highlights, or Microsoft Word-style track changes view. | `doctk diff` |
+| **Case Converter** | Convert text to sentence case, lower case, UPPER CASE, Capitalized Case, or Title Case. | `doctk case <mode>` |
 | **Markdown ⇄ TSV** | Convert markdown tables to/from TSV. | `doctk table md2tsv` / `doctk table tsv2md` |
 | **Markdown → Text** | Strip Markdown syntax and export plain text. | `doctk md2text` |
 | **PDF Checker** | 	Validate PDF/Illustrator page size and color mode against predefined paper-size presets. | `doctk pdf check` |

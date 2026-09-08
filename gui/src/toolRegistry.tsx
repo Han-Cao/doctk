@@ -17,6 +17,13 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     component: lazy(() => import("./features/diff-checker")),
   },
   {
+    id: "case_converter",
+    name: "Case Converter",
+    description: "Convert text to sentence case, lower case, UPPER CASE, Capitalized Case, or Title Case.",
+    icon: "🔤",
+    component: lazy(() => import("./features/case-converter")),
+  },
+  {
     id: "markdown_tsv",
     name: "Markdown ⇄ TSV",
     description: "Convert between markdown tables and TSV, with an editable table viewer.",

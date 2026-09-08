@@ -160,3 +160,125 @@ fn pdf_check_reports_json_and_fail_exit_code() {
     assert_eq!(report[0]["pages"][0]["color_mode"], "Rgb");
     assert_eq!(report[0]["pages"][1]["color_mode"], "Cmyk");
 }
+
+#[test]
+fn case_upper_converts_stdin_to_stdout() {
+    let mut child = doctk()
+        .args(["case", "upper", "-"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    use std::io::Write;
+    child
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b"hello WORLD\n")
+        .unwrap();
+
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert_eq!(String::from_utf8(output.stdout).unwrap(), "HELLO WORLD\n");
+}
+
+#[test]
+fn case_sentence_uses_repeated_proper_nouns() {
+    let mut child = doctk()
+        .args([
+            "case",
+            "sentence",
+            "-",
+            "--proper-noun",
+            "John",
+            "--proper-noun",
+            "New York",
+        ])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    use std::io::Write;
+    child
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b"john met mary in new york")
+        .unwrap();
+
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        "John met mary in New York"
+    );
+}
+
+#[test]
+fn case_title_writes_output_file() {
+    let input = fixture("case-title-input.txt");
+    let output_path = fixture("case-title-output.txt");
+    std::fs::write(&input, "the lord of the rings\n").unwrap();
+
+    let output = doctk()
+        .args([
+            "case",
+            "title",
+            input.to_str().unwrap(),
+            "-o",
+            output_path.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+    let text = std::fs::read_to_string(&output_path).unwrap();
+    assert_eq!(text, "The Lord of the Rings\n");
+
+    std::fs::remove_file(&input).unwrap();
+    std::fs::remove_file(&output_path).unwrap();
+}
+
+#[test]
+fn case_title_uses_proper_nouns() {
+    let mut child = doctk()
+        .args(["case", "title", "-", "--proper-noun", "NASA"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    use std::io::Write;
+    child
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b"nasa and the space race\n")
+        .unwrap();
+
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        "NASA and the Space Race\n"
+    );
+}
+
+#[test]
+fn case_invalid_mode_is_usage_error() {
+    let output = doctk().args(["case", "nope", "-"]).output().unwrap();
+    assert_eq!(output.status.code(), Some(2));
+}
+
+#[test]
+fn case_proper_noun_with_unsupported_mode_errors() {
+    let output = doctk()
+        .args(["case", "capitalized", "-", "--proper-noun", "John"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--proper-noun"));
+}

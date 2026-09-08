@@ -45,6 +45,8 @@ export interface TrackChangesDiff {
   segments: TrackChangeSegment[];
 }
 
+export type CaseMode = "sentence" | "lower" | "upper" | "capitalized" | "title";
+
 export interface PaperSize {
   name: string;
   width_pt: number;
@@ -84,6 +86,14 @@ export async function tableToMd(table: Table): Promise<string> {
 
 export async function markdownToText(md: string): Promise<string> {
   return invoke<string>("markdown_text_convert", { md });
+}
+
+export async function convertCase(
+  text: string,
+  mode: CaseMode,
+  properNouns: string[],
+): Promise<string> {
+  return invoke<string>("case_converter_convert", { text, mode, properNouns });
 }
 
 export async function diffSideBySide(left: string, right: string): Promise<SideBySideDiff> {

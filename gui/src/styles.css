@@ -303,3 +303,14 @@ button.danger:hover { background: #fee2e2; border-color: #fca5a5; }
 .icon-button:hover {
   background: #fee2e2;
 }
+
+/* Case converter layout */
+.tool-box.case-nouns-box {
+  flex: 0 0 auto;
+  height: 200px;
+  min-height: 200px;
+}
+
+.case-mode-toolbar {
+  gap: 8px;
+}

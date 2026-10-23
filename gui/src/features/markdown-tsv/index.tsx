@@ -14,21 +14,9 @@ import {
   type GridSelection,
 } from "./gridOps";
 
-const SAMPLE_MD =
-  "| name | qty | price |\n| --- | ---: | ---: |\n| apple | 4 | 1.20 |\n| pear | 7 | 0.80 |\n| plum | 5 | 2.10 |\n| kiwi | 3 | 3.40 |\n| fig | 6 | 1.75 |\n";
-
 export default function MarkdownTsvTool() {
-  const [markdown, setMarkdown] = useState(SAMPLE_MD);
-  const [table, setTable] = useState<Table | null>({
-    headers: ["name", "qty", "price"],
-    rows: [
-      ["apple", "4", "1.20"],
-      ["pear", "7", "0.80"],
-      ["plum", "5", "2.10"],
-      ["kiwi", "3", "3.40"],
-      ["fig", "6", "1.75"],
-    ],
-  });
+  const [markdown, setMarkdown] = useState("");
+  const [table, setTable] = useState<Table | null>({ headers: [], rows: [] });
   const [error, setError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
@@ -245,7 +233,7 @@ function EditableGrid(props: {
         </button>
       </div>
 
-      <div className="grid-scroll" onCopy={handleCopy} onPaste={handlePaste}>
+      <div className="grid-scroll" tabIndex={0} onCopy={handleCopy} onPaste={handlePaste}>
         <table className="grid-table">
           <thead>
             <tr>

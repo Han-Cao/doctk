@@ -71,6 +71,20 @@ pub fn inspect_pdfs(paths: &[PathBuf], paper: &PaperSize, tolerance_pt: f64, ign
 
 `Unit` and preset constants live in shared `doctk-core/src/units.rs` because future print-related tools will reuse them.
 
+### Loading compatibility
+
+The checker first parses the original bytes strictly with `lopdf`. If parsing
+fails specifically with an invalid-trailer error, it permits one narrow
+compatibility retry: when the terminal `startxref` offset points to PDF
+whitespace immediately before an `xref` table, correct only that final offset
+in memory and parse again. This handles off-by-one LF and off-by-two CRLF
+pointers, including files with a valid linearized/incremental `/Prev` chain.
+
+The source file is never modified. No objects, streams, earlier offsets, or
+line endings are rewritten. Invalid offsets, non-whitespace gaps, and unrelated
+corruption remain errors; an unsuccessful retry preserves the original error.
+This is read-time tolerance, not a general PDF repair or conversion feature.
+
 ### 3.3 Page size detection
 
 1. For each page, read `MediaBox`; fallback to `CropBox`.
@@ -241,6 +255,10 @@ doctk pdf check FILES... \
 - Encrypted PDF fixture → `is_encrypted=true`.
 - Non-PDF `.ai` fixture → `NotPdfCompatible`.
 - Corrupt file → error.
+- Whitespace-early terminal `startxref` pointers (LF/CRLF), including `/Prev`
+  chains → normal reports without modifying the source bytes.
+- Valid classic/xref-stream files keep strict parsing; malformed, overflowing,
+  out-of-range, and truncated pointers are not recovered.
 
 ### CLI (`assert_cmd`)
 - Summary output for a passing and failing PDF.

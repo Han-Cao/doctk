@@ -20,6 +20,20 @@ const base = {
 };
 
 describe("gridOps", () => {
+  it("serializes an initially empty table without sample content", () => {
+    const empty = { headers: [], rows: [] };
+    expect(tableToTsv(empty)).toBe("");
+    expect(selectionToTsv(empty, { r1: -1, r2: -1, c1: 0, c2: 0 })).toBe("");
+  });
+
+  it("builds a table from empty state in either row/column order", () => {
+    const empty = { headers: [], rows: [] };
+    const expected = { headers: ["col_1"], rows: [[""]] };
+    expect(addRow(addColumn(empty))).toEqual(expected);
+    expect(addColumn(addRow(empty))).toEqual(expected);
+    expect(empty).toEqual({ headers: [], rows: [] });
+  });
+
   it("adds a row at the end", () => {
     const next = addRow(base);
     expect(next.rows).toHaveLength(3);

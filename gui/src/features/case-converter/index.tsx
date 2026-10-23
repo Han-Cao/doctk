@@ -3,11 +3,10 @@ import { useState } from "react";
 import { convertCase, type CaseMode } from "../../lib/tauri";
 import { CASE_MODES, parseProperNounInput, showProperNouns } from "./caseModes";
 
-const SAMPLE_TEXT = "hello world. this is a test.";
 const PROPER_NOUN_PLACEHOLDER = "John\nNew York\nNASA";
 
 export default function CaseConverterTool() {
-  const [input, setInput] = useState(SAMPLE_TEXT);
+  const [input, setInput] = useState("");
   const [properNounsText, setProperNounsText] = useState("");
   const [output, setOutput] = useState("");
   const [activeMode, setActiveMode] = useState<CaseMode | null>(null);

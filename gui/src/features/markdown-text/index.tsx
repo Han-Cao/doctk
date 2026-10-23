@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { markdownToText } from "../../lib/tauri";
 
-const SAMPLE_MD = "# Header\n\nSome **bold** text and a [link](https://example.com).\n\n- item one\n- item two\n";
-
 export default function MarkdownTextTool() {
-  const [markdown, setMarkdown] = useState(SAMPLE_MD);
+  const [markdown, setMarkdown] = useState("");
   const [output, setOutput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);

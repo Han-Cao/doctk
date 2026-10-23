@@ -151,12 +151,14 @@ doctk table tsv2md [INPUT] [-o OUTPUT]
 
 ### 5.2 Behavior
 
-- **Initial sample data**: the default example markdown is a **5 × 3 table
-  (5 body rows, 3 columns)**, so the initial table viewer shows 5 body rows.
+- **Initial content**: the Markdown input is empty and the table model has no
+  headers or rows (`0 rows × 0 cols`). The grid and its paste/add controls remain
+  mounted; the empty viewer is keyboard-focusable so users can paste TSV before
+  loading Markdown. No sample content or blank seed rows/columns are inserted.
 - **Tab switching**: when the user switches to another tool tab and back, the
   markdown text and the TSV table state (including edits, selection, and dirty
   status) remain unchanged. The component is kept mounted or its state is
-  lifted to the shell so it never resets to the default sample on tab change.
+  lifted to the shell so tab changes never clear user-entered content.
 - **Markdown → table**: user edits markdown and clicks **Convert to Table ↓**.
   On success the grid is replaced with the parsed table; on error an inline
   message appears and the previous grid stays intact.

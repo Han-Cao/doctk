@@ -162,6 +162,66 @@ fn pdf_check_reports_json_and_fail_exit_code() {
 }
 
 #[test]
+fn pdf_check_recovers_whitespace_pointer_with_correct_exit_codes() {
+    let pdf = fixture("startxref-whitespace.pdf");
+    let original = std::fs::read(&pdf).unwrap();
+    for (paper, expected_code) in [("letter", 0), ("a4", 3)] {
+        let output = doctk()
+            .args([
+                "pdf",
+                "check",
+                pdf.to_str().unwrap(),
+                "--paper",
+                paper,
+                "--json",
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(expected_code), "{output:?}");
+        let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert!(report[0]["error"].is_null());
+        let pages = report[0]["pages"].as_array().unwrap();
+        assert_eq!(pages.len(), 2);
+        for page in pages {
+            assert_eq!(page["width_pt"], 612.0);
+            assert_eq!(page["height_pt"], 792.0);
+            assert_eq!(page["fits"], paper == "letter");
+        }
+        assert_eq!(pages[0]["color_mode"], "Rgb");
+        assert_eq!(pages[1]["color_mode"], "Cmyk");
+    }
+    assert_eq!(std::fs::read(&pdf).unwrap(), original);
+}
+
+#[test]
+fn pdf_check_continues_after_corrupt_file() {
+    let corrupt = fixture("table.md");
+    let valid = fixture("startxref-whitespace.pdf");
+    let output = doctk()
+        .args([
+            "pdf",
+            "check",
+            corrupt.to_str().unwrap(),
+            valid.to_str().unwrap(),
+            "--paper",
+            "letter",
+            "--json",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let reports: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(reports.as_array().unwrap().len(), 2);
+    assert!(reports[0]["error"]
+        .as_str()
+        .unwrap()
+        .contains("cannot load"));
+    assert!(reports[0]["pages"].as_array().unwrap().is_empty());
+    assert!(reports[1]["error"].is_null());
+    assert_eq!(reports[1]["pages"].as_array().unwrap().len(), 2);
+}
+
+#[test]
 fn case_upper_converts_stdin_to_stdout() {
     let mut child = doctk()
         .args(["case", "upper", "-"])

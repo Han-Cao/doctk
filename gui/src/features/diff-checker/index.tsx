@@ -9,14 +9,11 @@ import {
   type TrackChangesDiff,
 } from "../../lib/tauri";
 
-const LEFT_SAMPLE = "The quick brown fox\njumps over the lazy dog\n";
-const RIGHT_SAMPLE = "The quick red fox\njumps over the lazy cat\n";
-
 type CopyMode = "raw" | "original" | "changed";
 
 export default function DiffCheckerTool() {
-  const [left, setLeft] = useState(LEFT_SAMPLE);
-  const [right, setRight] = useState(RIGHT_SAMPLE);
+  const [left, setLeft] = useState("");
+  const [right, setRight] = useState("");
   const [view, setView] = useState<"side-by-side" | "track-changes">("side-by-side");
   const [copyMode, setCopyMode] = useState<CopyMode>("changed");
   const [sideBySide, setSideBySide] = useState<SideBySideDiff | null>(null);

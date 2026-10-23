@@ -279,7 +279,8 @@ The React shell (`gui/src/App.tsx` + `gui/src/shell/ToolLayout.tsx`) renders:
 - **Sidebar**: generated from `toolRegistry.tsx`, not hard-coded in the shell.
 - **Main area**: renders all registered tool components, toggling visibility with the `hidden` attribute so tab switching preserves component state.
 - **Routing**: state-based active tool id; the route path is the tool id.
-- **State preservation**: switching between tools keeps every tool mounted (hidden with `hidden`), so switching tabs never resets a tool to its initial sample data.
+- **Initial content**: document textareas start empty, and the TSV viewer starts with zero headers and rows. Configuration defaults and placeholder hints are retained.
+- **State preservation**: switching between tools keeps every tool mounted (hidden with `hidden`), so switching tabs never clears or replaces user-entered content.
 
 ### 6.2 Frontend feature contract
 

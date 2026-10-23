@@ -38,11 +38,19 @@ describe("empty initial document content", () => {
     expect(contents.every((value) => value === "")).toBe(true);
   });
 
-  it("keeps the empty TSV grid usable without sample headers or rows", () => {
+  it("starts with a visible 5-by-3 TSV grid containing only blank values", () => {
     const html = renderToStaticMarkup(<MarkdownTsvTool />);
-    expect(html).toContain("0 rows × 0 cols");
-    expect(html).toContain("<tbody></tbody>");
-    expect(html).not.toContain('class="header-cell"');
+    expect(html).toContain("5 rows × 3 cols");
+    expect(html.match(/class="header-cell"/g)).toHaveLength(3);
+    const body = html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+    expect(body.match(/<tr\b/g)).toHaveLength(5);
+    expect(body.match(/<td\b/g)).toHaveLength(15);
+    const values = Array.from(
+      html.matchAll(/<input\b[^>]*\bvalue="([^"]*)"[^>]*>/g),
+      (match) => match[1],
+    );
+    expect(values).toHaveLength(18);
+    expect(values.every((value) => value === "")).toBe(true);
     expect(html).toContain(">+ Row</button>");
     expect(html).toContain(">+ Column</button>");
     expect(html).toContain(">Paste TSV</button>");

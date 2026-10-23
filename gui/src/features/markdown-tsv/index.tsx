@@ -16,7 +16,10 @@ import {
 
 export default function MarkdownTsvTool() {
   const [markdown, setMarkdown] = useState("");
-  const [table, setTable] = useState<Table | null>({ headers: [], rows: [] });
+  const [table, setTable] = useState<Table | null>(() => ({
+    headers: ["", "", ""],
+    rows: Array.from({ length: 5 }, () => ["", "", ""]),
+  }));
   const [error, setError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 

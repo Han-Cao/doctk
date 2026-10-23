@@ -151,10 +151,11 @@ doctk table tsv2md [INPUT] [-o OUTPUT]
 
 ### 5.2 Behavior
 
-- **Initial content**: the Markdown input is empty and the table model has no
-  headers or rows (`0 rows × 0 cols`). The grid and its paste/add controls remain
-  mounted; the empty viewer is keyboard-focusable so users can paste TSV before
-  loading Markdown. No sample content or blank seed rows/columns are inserted.
+- **Initial content**: the Markdown input is empty and the table viewer shows
+  **5 blank body rows × 3 columns**, with blank editable headers. This preserves
+  the familiar table layout without inserting sample text. Paste/add controls
+  remain available, and the viewer is keyboard-focusable so users can paste TSV
+  before loading Markdown.
 - **Tab switching**: when the user switches to another tool tab and back, the
   markdown text and the TSV table state (including edits, selection, and dirty
   status) remain unchanged. The component is kept mounted or its state is
